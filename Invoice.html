@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Medical Solutions - Invoice Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .print-shadow-none {
+                box-shadow: none !important;
+            }
+            #invoiceId {
+                border-color: transparent !important;
+            }
+        }
+        .input-style {
+            @apply w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition;
+        }
+        .label-style {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-6 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg print-shadow-none" id="invoice-container">
+        <div class="p-6 sm:p-8 md:p-10">
+            <!-- Header Section -->
+            <header class="flex flex-col sm:flex-row justify-between items-start pb-8 border-b border-gray-200">
+                <div class="mb-6 sm:mb-0">
+                    <img src="https://145955222.fs1.hubspotusercontent-eu1.net/hubfs/145955222/Logo%20FINAL%20(2).png" alt="Aegis Medical Solutions Ltd Logo" class="w-48 h-auto"
+                         onerror="this.onerror=null; this.src='https://placehold.co/200x60/e2e8f0/4a5568?text=Aegis+Medical+Solutions'; this.classList.add('p-4');">
+                    <div class="mt-4 text-gray-600">
+                        <p class="font-semibold">Aegis Medical Solutions Limited</p>
+                        <p>Flat 107, Thornhill Court, Oxford, OX3 9GJ</p>
+                        <p>01865 965673</p>
+                        <p>invoicing@aegismedicalsolutions.co.uk</p>
+                    </div>
+                </div>
+                <div class="text-left sm:text-right w-full sm:w-auto">
+                    <h1 class="text-3xl font-bold text-gray-800">INVOICE</h1>
+                    <div class="mt-4">
+                        <label for="invoiceId" class="label-style">Invoice #</label>
+                        <input type="text" id="invoiceId" class="input-style sm:text-right" placeholder="Generated on save/send" readonly>
+                    </div>
+                    <div class="mt-2">
+                         <label for="invoiceDate" class="label-style">Date</label>
+                        <input type="date" id="invoiceDate" class="input-style sm:text-right">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Staff Details Section -->
+            <section class="my-8">
+                 <div class="max-w-md">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-2">Staff Member Details:</h2>
+                     <input type="text" id="staffName" placeholder="Your Full Name" class="input-style mb-2">
+                     <textarea id="staffAddress" placeholder="Your Address..." rows="3" class="input-style"></textarea>
+                </div>
+            </section>
+
+            <!-- Line Items Table -->
+            <section>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left" id="invoice-items">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-sm font-semibold text-gray-600">Date</th>
+                                <th class="p-3 text-sm font-semibold text-gray-600">Description</th>
+                                <th class="p-3 text-sm font-semibold text-gray-600">Role</th>
+                                <th class="p-3 text-sm font-semibold text-gray-600 text-right">Hours</th>
+                                <th class="p-3 text-sm font-semibold text-gray-600 text-right">Rate</th>
+                                <th class="p-3 text-sm font-semibold text-gray-600 text-right">Total</th>
+                                <th class="p-3 no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <button id="addRow" class="no-print mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition shadow">
+                    + Add Shift
+                </button>
+            </section>
+
+            <!-- Totals Section -->
+            <section class="mt-8 flex justify-end">
+                <div class="w-full sm:w-1/2 md:w-2/5">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="font-medium text-gray-600">Subtotal</span>
+                        <span id="subtotal" class="font-medium text-gray-800">£0.00</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b items-center">
+                         <span class="font-medium text-gray-600">VAT (%)</span>
+                         <input type="number" id="vatRate" value="0" class="w-24 p-1 border border-gray-300 rounded-md text-right">
+                    </div>
+                     <div class="flex justify-between py-2 border-b">
+                        <span class="font-medium text-gray-600">VAT Amount</span>
+                        <span id="vatAmount" class="font-medium text-gray-800">£0.00</span>
+                    </div>
+                    <div class="flex justify-between py-3 bg-gray-100 rounded-b-lg px-2 mt-2">
+                        <span class="text-xl font-bold text-gray-900">Total Due</span>
+                        <span id="total" class="text-xl font-bold text-gray-900">£0.00</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes & Footer -->
+            <footer class="mt-12">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Notes / Payment Details</h3>
+                <textarea placeholder="Add your bank account number and sort code here..." rows="4" class="input-style"></textarea>
+                <div class="text-center text-gray-500 text-sm mt-8">
+                    <p>Thank you for your hard work!</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="max-w-4xl mx-auto my-6 flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-3 sm:space-y-0 no-print">
+        <button id="printInvoice" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition shadow w-full sm:w-auto">
+            Print / Save as PDF
+        </button>
+        <button id="sendInvoice" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition shadow w-full sm:w-auto">
+            Send Invoice
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Configuration ---
+            const payRates = {
+                'FREC 3': 13.50,
+                'FREC 4': 14.00,
+                'ECA': 14.00,
+                'Nightclub Medic': 15.00,
+                'FREUC 5/Technician': 20.00,
+                'NQP': 25.00,
+                'Paramedic': 27.50,
+                'Nurse': 27.50,
+                'Doctor': 35.00
+            };
+
+            // --- Element References ---
+            const itemsTableBody = document.querySelector('#invoice-items tbody');
+            const addRowButton = document.getElementById('addRow');
+            const subtotalEl = document.getElementById('subtotal');
+            const vatRateEl = document.getElementById('vatRate');
+            const vatAmountEl = document.getElementById('vatAmount');
+            const totalEl = document.getElementById('total');
+            const invoiceIdInput = document.getElementById('invoiceId');
+            const invoiceDateInput = document.getElementById('invoiceDate');
+            const printButton = document.getElementById('printInvoice');
+            const sendButton = document.getElementById('sendInvoice');
+            
+            // --- State ---
+            let invoiceIdGenerated = false;
+
+            // --- Functions ---
+            const formatCurrency = (amount) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+            
+            const addNewRow = () => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200 item-row';
+                const roleOptions = Object.keys(payRates).map(role => `<option value="${role}">${role}</option>`).join('');
+                row.innerHTML = `
+                    <td class="p-2"><input type="date" class="input-style"></td>
+                    <td class="p-2"><input type="text" placeholder="Event Name / Location" class="input-style"></td>
+                    <td class="p-2"><select class="input-style role-select">${roleOptions}</select></td>
+                    <td class="p-2"><input type="number" value="1" min="0" step="0.25" class="input-style text-right hours-input"></td>
+                    <td class="p-2 text-right rate-display"></td>
+                    <td class="p-2 text-right font-medium text-gray-700 line-total"></td>
+                    <td class="p-2 text-center no-print"><button class="remove-row text-red-500 hover:text-red-700 font-bold">✕</button></td>
+                `;
+                itemsTableBody.appendChild(row);
+                updateRow(row);
+            };
+
+            const updateRow = (row) => {
+                const roleSelect = row.querySelector('.role-select');
+                const hoursInput = row.querySelector('.hours-input');
+                const rateDisplay = row.querySelector('.rate-display');
+                const lineTotalEl = row.querySelector('.line-total');
+                const selectedRole = roleSelect.value;
+                const hours = parseFloat(hoursInput.value) || 0;
+                const rate = payRates[selectedRole] || 0;
+                const lineTotal = hours * rate;
+                rateDisplay.textContent = formatCurrency(rate);
+                lineTotalEl.textContent = formatCurrency(lineTotal);
+                updateTotals();
+            };
+
+            const updateTotals = () => {
+                const rows = itemsTableBody.querySelectorAll('.item-row');
+                let subtotal = 0;
+                rows.forEach(row => {
+                    const lineTotalText = row.querySelector('.line-total').textContent;
+                    const lineTotal = parseFloat(lineTotalText.replace(/[^0-9.-]+/g, "")) || 0;
+                    subtotal += lineTotal;
+                });
+                const vatRate = parseFloat(vatRateEl.value) || 0;
+                const vatAmount = subtotal * (vatRate / 100);
+                const total = subtotal + vatAmount;
+                subtotalEl.textContent = formatCurrency(subtotal);
+                vatAmountEl.textContent = formatCurrency(vatAmount);
+                totalEl.textContent = formatCurrency(total);
+            };
+            
+            const handleTableEvents = (e) => {
+                const row = e.target.closest('.item-row');
+                if (!row) return;
+                if (e.target.classList.contains('remove-row')) {
+                    row.remove();
+                    updateTotals();
+                } else if (e.target.classList.contains('role-select') || e.target.classList.contains('hours-input')) {
+                    updateRow(row);
+                }
+            };
+
+            const generateInvoiceId = () => {
+                const today = new Date();
+                const dateString = today.toISOString().slice(0, 10).replace(/-/g, '');
+                const storageKey = `invoiceCounter_${dateString}`;
+                let counter = parseInt(localStorage.getItem(storageKey) || '0') + 1;
+                localStorage.setItem(storageKey, counter);
+                const formattedCounter = String(counter).padStart(4, '0');
+                invoiceIdInput.value = `INV-${dateString}-${formattedCounter}`;
+            };
+
+            const finalizeInvoice = () => {
+                if (invoiceIdGenerated) return;
+                generateInvoiceId();
+                invoiceIdGenerated = true;
+            };
+
+            const printInvoiceContent = () => {
+                finalizeInvoice();
+                // A brief delay to allow the DOM to update with the new invoice ID
+                setTimeout(() => {
+                    const invoiceHTML = document.getElementById('invoice-container').innerHTML;
+                    const originalStyles = Array.from(document.styleSheets)
+                        .map(sheet => {
+                            try {
+                                return Array.from(sheet.cssRules)
+                                    .map(rule => rule.cssText)
+                                    .join('');
+                            } catch (e) {
+                                // For external stylesheets (like Google Fonts), we just re-link them.
+                                return `<link rel="stylesheet" href="${sheet.href}">`;
+                            }
+                        })
+                        .join('\n');
+                    
+                    const tailwindLink = '<script src="https://cdn.tailwindcss.com"><\/script>';
+
+                    const printFrame = document.createElement('iframe');
+                    printFrame.style.position = 'absolute';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+
+                    const frameDoc = printFrame.contentWindow.document;
+                    frameDoc.open();
+                    frameDoc.write(`
+                        <!DOCTYPE html><html><head><title>Print</title>${tailwindLink}${originalStyles}</head><body>${invoiceHTML}</body></html>
+                    `);
+                    frameDoc.close();
+
+                    setTimeout(() => {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                        document.body.removeChild(printFrame);
+                    }, 500); // Wait for styles to apply in the iframe
+                }, 100);
+            };
+
+            const sendInvoiceByEmail = () => {
+                finalizeInvoice();
+                const staffName = document.getElementById('staffName').value || 'Staff Member';
+                const invoiceId = invoiceIdInput.value;
+                const total = totalEl.textContent;
+                const subject = encodeURIComponent(`Invoice Submission: ${staffName} - ${invoiceId}`);
+                const body = encodeURIComponent(
+`Hi team,
+
+Please find my invoice (${invoiceId}) attached for the total amount of ${total}.
+
+Instructions:
+1. Click 'Print / Save as PDF' on the portal.
+2. In the print dialog, choose 'Save as PDF'.
+3. Attach the saved PDF to this email before sending.
+
+Thanks,
+${staffName}`
+                );
+                window.location.href = `mailto:invoicing@aegismedicalsolutions.co.uk?subject=${subject}&body=${body}`;
+            };
+
+            const initializeInvoice = () => {
+                invoiceDateInput.value = new Date().toISOString().split('T')[0];
+                addNewRow();
+            };
+
+            // --- Event Listeners ---
+            addRowButton.addEventListener('click', addNewRow);
+            itemsTableBody.addEventListener('input', handleTableEvents);
+            itemsTableBody.addEventListener('click', handleTableEvents);
+            vatRateEl.addEventListener('input', updateTotals);
+            printButton.addEventListener('click', printInvoiceContent);
+            sendButton.addEventListener('click', () => {
+                finalizeInvoice();
+                sendInvoiceByEmail();
+            });
+
+            // --- Initial Setup ---
+            initializeInvoice();
+        });
+    </script>
+</body>
+</html>
